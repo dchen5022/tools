@@ -195,6 +195,12 @@ class git_change_log(object):
                         continue
 
                     upstream_commit = self.UpstreamRepo.commit(match.group(1))
+
+                    # Ignore refs to commits not from upstream
+                    if not is_upstream_commit(commit):
+                        print("Skipped (references non-upstream commit):", commit)
+                        continue
+
                     self.included_commits_set.add(upstream_commit.hexsha)
                 else:
                     if self.debug:
@@ -249,6 +255,14 @@ class git_change_log(object):
     UpstreamRepo = property(get_upstream_repo)
     IncludedCommits = property(get_included_commits)
     UpstreamCommits = property(get_upstream_commits)
+
+def is_upstream_commit(commit):
+    for line in commit.message.splitlines():
+        if (re.search("Upstream status:", line, re.IGNORECASE) and
+            (re.search("RHEL", line, re.IGNORECASE) or re.search("N/A", line, re.IGNORECASE))):
+                return False
+    return True
+
 
 
 if __name__ == '__main__':
