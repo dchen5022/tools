@@ -194,7 +194,12 @@ class git_change_log(object):
                         print("Ignore:", commit)
                         continue
 
-                    upstream_commit = self.UpstreamRepo.commit(match.group(1))
+                    try:
+                        upstream_commit = self.UpstreamRepo.commit(match.group(1))
+                    except Exception as e:
+                        print("Ignored (referenced commit not found in upstream):", commit)
+                        continue
+
                     self.included_commits_set.add(upstream_commit.hexsha)
                 else:
                     if self.debug:
